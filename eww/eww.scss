@@ -1,0 +1,139 @@
+// Launchpad Dashboard Styles
+// Text-only design with colorful workspace entries
+
+// Include configure mode styles
+@import 'configure';
+
+// ─────────────────────────────────────────────────────────────
+// Color Palette (rainbow for workspace entries)
+// ─────────────────────────────────────────────────────────────
+
+$color-0: #ffffff;  // White - Launch All
+$color-1: #ff6b6b;  // Red - Launchpad
+$color-2: #ffa94d;  // Orange - Focus
+$color-3: #ffd43b;  // Yellow - Admin
+$color-4: #69db7c;  // Green - Research
+$color-5: #38d9a9;  // Teal - Meetings
+$color-6: #4dabf7;  // Blue - Dev
+$color-7: #9775fa;  // Purple - Demo
+$color-8: #f783ac;  // Pink - Gaming
+
+$text-dim: rgba(255, 255, 255, 0.5);
+
+// ─────────────────────────────────────────────────────────────
+// Dashboard Container
+// ─────────────────────────────────────────────────────────────
+
+.dashboard {
+  background-color: rgba(0, 0, 0, 0.7);
+  padding: 48px;
+  border-radius: 24px;
+}
+
+// ─────────────────────────────────────────────────────────────
+// ASCII Art Header
+// ─────────────────────────────────────────────────────────────
+
+.ascii-art {
+  font-family: monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffffff;
+  letter-spacing: 0;
+  margin-bottom: 16px;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Command Prompt
+// ─────────────────────────────────────────────────────────────
+
+.prompt-container {
+  padding: 0 20px;
+  margin-bottom: 8px;
+}
+
+.prompt-symbol {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: bold;
+  color: #69db7c;
+}
+
+.prompt-input {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 500;
+  color: #ffffff;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  min-width: 200px;
+  padding: 4px 8px;
+
+  &:focus {
+    border-bottom-color: #69db7c;
+  }
+}
+
+.error-msg {
+  font-family: monospace;
+  font-size: 14px;
+  color: #ff6b6b;
+  padding: 4px 0 0 32px;
+}
+
+.help-text {
+  font-family: monospace;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 16px 20px 0 20px;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Workspace List
+// ─────────────────────────────────────────────────────────────
+
+.workspace-list {
+  padding: 0 20px;
+}
+
+.workspace-entry {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 500;
+  padding: 12px 24px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &.kbd-nav:hover {
+    background-color: transparent;
+  }
+
+  &.selected {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-left: 3px solid currentColor;
+  }
+
+  &.current {
+    border: 1px solid rgba(255, 255, 255, 0.5);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────
+// Workspace Colors
+// ─────────────────────────────────────────────────────────────
+
+.color-0 { color: $color-0; &:hover { background-color: rgba($color-0, 0.15); } }
+.color-1 { color: $color-1; &:hover { background-color: rgba($color-1, 0.15); } }
+.color-2 { color: $color-2; &:hover { background-color: rgba($color-2, 0.15); } }
+.color-3 { color: $color-3; &:hover { background-color: rgba($color-3, 0.15); } }
+.color-4 { color: $color-4; &:hover { background-color: rgba($color-4, 0.15); } }
+.color-5 { color: $color-5; &:hover { background-color: rgba($color-5, 0.15); } }
+.color-6 { color: $color-6; &:hover { background-color: rgba($color-6, 0.15); } }
+.color-7 { color: $color-7; &:hover { background-color: rgba($color-7, 0.15); } }
+.color-8 { color: $color-8; &:hover { background-color: rgba($color-8, 0.15); } }

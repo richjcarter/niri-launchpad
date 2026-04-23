@@ -1,0 +1,46 @@
+// Niri Launchpad Keybindings
+// Add these to your ~/.config/niri/config.kdl binds {} section
+
+// ─── Workspace Definitions ───
+// Add at top of config.kdl:
+// workspace "Default"
+// workspace "Focus"
+// workspace "Admin"
+// workspace "Research"
+// workspace "Meetings"
+// workspace "Dev"
+// workspace "Demo"
+// workspace "Gaming"
+
+// ─── Launchpad Controls ───
+MOD+GRAVE                           hotkey-overlay-title="Go to Default" { focus-workspace "Default"; }
+MOD+Backslash                       hotkey-overlay-title="Toggle Launcher" { spawn-sh "GTK_THEME=Adwaita:dark eww -c ~/.config/eww/launchpad open --toggle launchpad"; }
+MOD+SHIFT+B                         hotkey-overlay-title="Cycle Background" { spawn-sh "~/.local/share/launchpad/scripts/cycle-background.sh"; }
+MOD+SHIFT+M                         hotkey-overlay-title="Toggle Music" { spawn-sh "~/.local/share/launchpad/scripts/toggle-music.sh"; }
+
+// ─── Workspace Navigation ───
+MOD+UP                              hotkey-overlay-title="Focus activated workspace up" { spawn-sh "~/.local/share/launchpad/scripts/navigate-activated.sh up"; }
+MOD+DOWN                            hotkey-overlay-title="Focus activated workspace down" { spawn-sh "~/.local/share/launchpad/scripts/navigate-activated.sh down"; }
+
+// ─── Direct Workspace Access (MOD+1-8) ───
+MOD+1                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 1"; }
+MOD+2                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 2"; }
+MOD+3                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 3"; }
+MOD+4                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 4"; }
+MOD+5                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 5"; }
+MOD+6                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 6"; }
+MOD+7                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 7"; }
+MOD+8                               { spawn-sh "~/.local/share/launchpad/scripts/focus-workspace.sh 8"; }
+
+// ─── Launcher Navigation ───
+MOD+SHIFT+UP                        hotkey-overlay-title="Launcher: Navigate up" { spawn-sh "~/.local/share/launchpad/scripts/navigate.sh up"; }
+MOD+SHIFT+DOWN                      hotkey-overlay-title="Launcher: Navigate down" { spawn-sh "~/.local/share/launchpad/scripts/navigate.sh down"; }
+MOD+SHIFT+LEFT                      hotkey-overlay-title="Navigate/reorder left" { spawn-sh "~/.local/share/launchpad/scripts/navigate.sh left"; }
+MOD+SHIFT+RIGHT                     hotkey-overlay-title="Navigate/reorder right" { spawn-sh "~/.local/share/launchpad/scripts/navigate.sh right"; }
+MOD+SHIFT+Return                    hotkey-overlay-title="Launcher/Configure: Confirm" { spawn-sh "~/.local/share/launchpad/scripts/configure-confirm.sh"; }
+MOD+Backspace                       hotkey-overlay-title="Configure: Go back" { spawn-sh "~/.local/share/launchpad/scripts/configure-handler.sh back"; }
+
+// ─── Configure Mode ───
+MOD+SHIFT+A                         hotkey-overlay-title="Configure: Add app (wofi)" { spawn-sh "~/.local/share/launchpad/scripts/configure-handler.sh add-app-picker"; }
+MOD+SHIFT+E                         hotkey-overlay-title="Configure: Edit app args" { spawn-sh "~/.local/share/launchpad/scripts/configure-handler.sh edit-args"; }
+MOD+SHIFT+X                         hotkey-overlay-title="Configure: Remove selected app" { spawn-sh "~/.local/share/launchpad/scripts/configure-handler.sh remove-selected"; }

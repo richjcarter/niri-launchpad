@@ -1,0 +1,133 @@
+; Launchpad Dashboard for Niri
+; Text-only workspace launcher with ASCII art
+
+; Include configure mode widgets
+(include "./configure.yuck")
+
+; ─────────────────────────────────────────────────────────────
+; Variables
+; ─────────────────────────────────────────────────────────────
+
+; Poll visited workspaces (space-separated list of visited workspace numbers)
+(defpoll visited :interval "1s"
+  `cat /tmp/launchpad-visited-workspaces 2>/dev/null | paste -sd' ' -`)
+
+; Poll current workspace index
+(defpoll current-ws :interval "500ms"
+  `~/.local/share/launchpad/scripts/get-current-workspace.sh`)
+
+; Selected workspace index for keyboard navigation
+(defvar selected 1)
+
+; Error message for invalid input
+(defvar error-msg "")
+
+; Keyboard navigation active (disables mouse hover)
+(defvar kbd-nav false)
+
+(defvar ascii-art `
+██╗     ██╗   ██╗██╗  ██╗
+██║     ██║   ██║╚██╗██╔╝
+██║     ██║   ██║ ╚███╔╝
+██║     ██║   ██║ ██╔██╗
+███████╗╚██████╔╝██╔╝ ██╗
+╚══════╝ ╚═════╝ ╚═╝  ╚═╝`)
+
+; Pending activation workspace (for confirmation flow)
+(defvar pending-ws "")
+
+; ─────────────────────────────────────────────────────────────
+; Workspace Entry Widget
+; ─────────────────────────────────────────────────────────────
+
+(defwidget workspace-entry [num name class]
+  (button
+    :class "workspace-entry ${class} ${selected == num ? 'selected' : ''} ${kbd-nav ? 'kbd-nav' : ''} ${current-ws == num ? 'current' : ''}"
+    :halign "start"
+    :onclick "niri msg action focus-workspace ${num}"
+    (label :text "${num}  ${name}${matches(visited, '(^| )${num}( |$)') ? '' : '*'}")))
+
+; Command prompt widget
+(defwidget prompt []
+  (box
+    :class "prompt-box"
+    :orientation "v"
+    :halign "start"
+    :space-evenly false
+    :spacing 4
+    (box
+      :class "prompt-container"
+      :orientation "h"
+      :space-evenly false
+      :spacing 8
+      (label :class "prompt-symbol" :text ">")
+      (input
+        :class "prompt-input"
+        :onchange "~/.local/share/launchpad/scripts/handle-input.sh '{}' change"
+        :onaccept "~/.local/share/launchpad/scripts/handle-input.sh '{}' accept"))
+    (label
+      :class "error-msg"
+      :halign "start"
+      :visible {error-msg != ""}
+      :text error-msg)))
+
+; ─────────────────────────────────────────────────────────────
+; Main Dashboard Widget
+; ─────────────────────────────────────────────────────────────
+
+(defwidget dashboard []
+  (box
+    :class "dashboard"
+    :orientation "v"
+    :space-evenly false
+    :halign "fill"
+    :valign "fill"
+    :spacing 24
+
+    ; ASCII Art Header
+    (label :class "ascii-art" :halign "start" :text ascii-art)
+
+    ; Command Prompt
+    (prompt)
+
+    ; Workspace List
+    (box
+      :class "workspace-list"
+      :orientation "v"
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+
+      (workspace-entry :num 0 :name "Launch All" :class "color-0")
+      (workspace-entry :num 1 :name "Default" :class "color-1")
+      (workspace-entry :num 2 :name "Focus" :class "color-2")
+      (workspace-entry :num 3 :name "Admin" :class "color-3")
+      (workspace-entry :num 4 :name "Research" :class "color-4")
+      (workspace-entry :num 5 :name "Meetings" :class "color-5")
+      (workspace-entry :num 6 :name "Dev" :class "color-6")
+      (workspace-entry :num 7 :name "Demo" :class "color-7")
+      (workspace-entry :num 8 :name "Gaming" :class "color-8"))
+
+    ; Help text
+    (label
+      :class "help-text"
+      :halign "start"
+      :text "MOD+SHIFT+↑/↓ navigate  |  * = not activated")))
+
+; ─────────────────────────────────────────────────────────────
+; Window Definition
+; ─────────────────────────────────────────────────────────────
+
+(defwindow launchpad
+  :monitor 0
+  :geometry (geometry
+    :x "100px"
+    :y "150px"
+    :width "350px"
+    :height "580px"
+    :anchor "top left")
+  :stacking "overlay"
+  :exclusive false
+  :focusable true
+  :namespace "launchpad"
+  (dashboard))

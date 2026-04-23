@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "workspaces": {
+    "2": {
+      "name": "Focus",
+      "apps": []
+    },
+    "3": {
+      "name": "Admin",
+      "apps": [
+        {
+          "desktop_file": "kitty.desktop",
+          "name": "kitty",
+          "exec": "kitty",
+          "position": 0,
+          "args": "--directory ~/projects/sys-admin"
+        }
+      ]
+    },
+    "4": {
+      "name": "Research",
+      "apps": []
+    },
+    "5": {
+      "name": "Meetings",
+      "apps": [
+        {
+          "desktop_file": "msedge-fmgjjmmmlfnkbppncabfkddbjimcfncm-Default.desktop",
+          "name": "Gmail",
+          "exec": "/opt/microsoft/msedge/microsoft-edge --profile-directory",
+          "position": 0
+        }
+      ]
+    },
+    "6": {
+      "name": "Dev",
+      "apps": [
+        {
+          "desktop_file": "kitty.desktop",
+          "name": "kitty",
+          "exec": "kitty",
+          "position": 0
+        }
+      ]
+    },
+    "7": {
+      "name": "Demo",
+      "apps": []
+    },
+    "8": {
+      "name": "Gaming",
+      "apps": [
+        {
+          "desktop_file": "steam.desktop",
+          "name": "Steam",
+          "exec": "/usr/bin/steam",
+          "position": 0
+        }
+      ]
+    },
+    "": {
+      "apps": [
+        {
+          "desktop_file": "firefox.desktop",
+          "name": "Firefox",
+          "exec": "/usr/lib/firefox/firefox",
+          "position": 0
+        }
+      ]
+    }
+  }
+}

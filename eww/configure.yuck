@@ -1,0 +1,292 @@
+; Configure Mode for Launchpad
+; Workspace layout configuration with app selection and ordering
+
+; ─────────────────────────────────────────────────────────────
+; Configure Variables
+; ─────────────────────────────────────────────────────────────
+
+; Configure mode: "" (inactive), "ws-select", "app-list", "app-picker"
+(defvar cfg-mode "")
+
+; Currently selected workspace for configuration (2-8)
+(defvar cfg-ws "2")
+
+; Selected item index in current list
+(defvar cfg-selected 0)
+
+; Search query for app picker
+(defvar cfg-search "")
+
+; Error/status message
+(defvar cfg-msg "")
+
+; Keyboard navigation active
+(defvar cfg-kbd-nav false)
+
+; Poll workspace layouts from JSON (initial empty object for safety)
+(defpoll cfg-layouts :interval "1s" :initial '{"workspaces":{}}'
+  `cat ~/.config/launchpad/workspace-layouts.json 2>/dev/null || echo '{"workspaces":{}}'`)
+
+; Search results (updated by configure-handler.sh via temp file)
+(defpoll cfg-search-results :interval "500ms" :initial '[]'
+  `cat /tmp/launchpad-search-results.json 2>/dev/null || echo '[]'`)
+
+; ─────────────────────────────────────────────────────────────
+; Helper Functions
+; ─────────────────────────────────────────────────────────────
+
+; Get app count for a workspace
+(defwidget ws-app-count [ws]
+  (label
+    :class "cfg-app-count"
+    :text "[${jq(cfg-layouts, 'if .workspaces["${ws}"] then (.workspaces["${ws}"].apps | length) else 0 end') ?: 0} apps]"))
+
+; ─────────────────────────────────────────────────────────────
+; Screen 1: Workspace Selection
+; ─────────────────────────────────────────────────────────────
+
+(defwidget cfg-ws-entry [num name]
+  (button
+    :class "cfg-entry ${cfg-selected == num ? 'selected' : ''} ${cfg-kbd-nav ? 'kbd-nav' : ''}"
+    :halign "start"
+    :onclick "~/.local/share/launchpad/scripts/configure-handler.sh select-ws ${num}"
+    (box
+      :orientation "h"
+      :space-evenly false
+      :spacing 16
+      (label :class "cfg-num" :text "${num}")
+      (label :class "cfg-name" :text name)
+      (ws-app-count :ws num))))
+
+(defwidget cfg-ws-select-screen []
+  (box
+    :class "cfg-screen"
+    :orientation "v"
+    :space-evenly false
+    :spacing 16
+
+    (label :class "cfg-header" :halign "start" :text "CONFIGURE WORKSPACE LAYOUTS")
+
+    ; Prompt
+    (box
+      :class "cfg-prompt-box"
+      :orientation "h"
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+      (label :class "prompt-symbol" :text ">")
+      (input
+        :class "cfg-input"
+        :onchange "~/.local/share/launchpad/scripts/configure-handler.sh input '{}' change"
+        :onaccept "~/.local/share/launchpad/scripts/configure-handler.sh input '{}' accept"))
+
+    ; Message area
+    (label
+      :class "cfg-msg"
+      :halign "start"
+      :visible {cfg-msg != ""}
+      :text cfg-msg)
+
+    ; Workspace list
+    (box
+      :class "cfg-list"
+      :orientation "v"
+      :halign "start"
+      :space-evenly false
+      :spacing 6
+      (cfg-ws-entry :num 2 :name "Focus")
+      (cfg-ws-entry :num 3 :name "Admin")
+      (cfg-ws-entry :num 4 :name "Research")
+      (cfg-ws-entry :num 5 :name "Meetings")
+      (cfg-ws-entry :num 6 :name "Dev")
+      (cfg-ws-entry :num 7 :name "Demo")
+      (cfg-ws-entry :num 8 :name "Gaming"))
+
+    ; Help text
+    (label
+      :class "cfg-help"
+      :halign "start"
+      :text "MOD+SHIFT+↑/↓ nav | MOD+SHIFT+Enter select | MOD+Backspace back")))
+
+; ─────────────────────────────────────────────────────────────
+; Screen 2: App List for Selected Workspace
+; ─────────────────────────────────────────────────────────────
+
+(defwidget cfg-app-entry [index app]
+  (button
+    :class "cfg-entry ${cfg-selected == index ? 'selected' : ''} ${cfg-kbd-nav ? 'kbd-nav' : ''}"
+    :halign "start"
+    :onclick "~/.local/share/launchpad/scripts/configure-handler.sh select-app ${index}"
+    (box
+      :orientation "h"
+      :space-evenly false
+      :spacing 16
+      (label :class "cfg-num" :text "${index + 1}")
+      (label :class "cfg-name" :text {app.name ?: "(empty)"})
+      (label :class "cfg-args" :visible {(app.args ?: "") != ""} :text {app.args != "" ? "→ ${app.args}" : ""})
+      (label :class "cfg-col" :text {app.name != "" ? "[col ${index + 1}]" : ""}))))
+
+(defwidget cfg-app-list-screen []
+  (box
+    :class "cfg-screen"
+    :orientation "v"
+    :space-evenly false
+    :spacing 16
+
+    ; Header with workspace name
+    (label
+      :class "cfg-header"
+      :halign "start"
+      :text "${jq(cfg-layouts, 'if .workspaces["${cfg-ws}"] then .workspaces["${cfg-ws}"].name else "WORKSPACE" end') ?: 'WORKSPACE'} - APP LAYOUT")
+
+    ; Prompt
+    (box
+      :class "cfg-prompt-box"
+      :orientation "h"
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+      (label :class "prompt-symbol" :text ">")
+      (input
+        :class "cfg-input"
+        :onchange "~/.local/share/launchpad/scripts/configure-handler.sh input '{}' change"
+        :onaccept "~/.local/share/launchpad/scripts/configure-handler.sh input '{}' accept"))
+
+    ; Message area
+    (label
+      :class "cfg-msg"
+      :halign "start"
+      :visible {cfg-msg != ""}
+      :text cfg-msg)
+
+    ; App list (dynamic from JSON)
+    (box
+      :class "cfg-list"
+      :orientation "v"
+      :halign "start"
+      :space-evenly false
+      :spacing 6
+      (for app in {jq(cfg-layouts, 'if .workspaces["${cfg-ws}"] then .workspaces["${cfg-ws}"].apps else [] end')}
+        (cfg-app-entry :index {app.position} :app app))
+      ; Show empty slot if fewer than 1 app
+      (label
+        :class "cfg-empty"
+        :halign "start"
+        :visible {(jq(cfg-layouts, 'if .workspaces["${cfg-ws}"] then (.workspaces["${cfg-ws}"].apps | length) else 0 end') ?: 0) == 0}
+        :text "(no apps configured)"))
+
+    ; Help text
+    (label
+      :class "cfg-help"
+      :halign "start"
+      :text "MOD+SHIFT: ↑/↓/←/→ nav/reorder | A add | E edit args | X del | Backspace back")))
+
+; ─────────────────────────────────────────────────────────────
+; Screen 3: App Picker (Search)
+; ─────────────────────────────────────────────────────────────
+
+(defwidget cfg-search-entry [index app]
+  (button
+    :class "cfg-entry ${cfg-selected == index ? 'selected' : ''} ${cfg-kbd-nav ? 'kbd-nav' : ''}"
+    :halign "start"
+    :onclick "~/.local/share/launchpad/scripts/configure-handler.sh add-app '${app.file}'"
+    (box
+      :orientation "h"
+      :space-evenly false
+      :spacing 16
+      (label :class "cfg-num" :text "${index + 1}")
+      (label :class "cfg-name" :text {app.name}))))
+
+(defwidget cfg-app-picker-screen []
+  (box
+    :class "cfg-screen"
+    :orientation "v"
+    :space-evenly false
+    :spacing 16
+
+    ; Header
+    (label
+      :class "cfg-header"
+      :halign "start"
+      :text "ADD APP TO ${jq(cfg-layouts, 'if .workspaces["${cfg-ws}"] then .workspaces["${cfg-ws}"].name else "WORKSPACE" end') ?: 'WORKSPACE'}")
+
+    ; Search prompt
+    (box
+      :class "cfg-prompt-box"
+      :orientation "h"
+      :halign "start"
+      :space-evenly false
+      :spacing 8
+      (label :class "prompt-symbol" :text ">")
+      (input
+        :class "cfg-input"
+        :value cfg-search
+        :onchange "~/.local/share/launchpad/scripts/configure-handler.sh search '{}'"
+        :onaccept "~/.local/share/launchpad/scripts/configure-handler.sh pick-app"))
+
+    ; Message area
+    (label
+      :class "cfg-msg"
+      :halign "start"
+      :visible {cfg-msg != ""}
+      :text cfg-msg)
+
+    ; Search results
+    (box
+      :class "cfg-list"
+      :orientation "v"
+      :halign "start"
+      :space-evenly false
+      :spacing 6
+      (for app in {cfg-search-results}
+        (cfg-search-entry :index {jq(cfg-search-results, 'to_entries | map(select(.value.file == "${app.file}")) | .[0].key // 0')} :app app))
+      (label
+        :class "cfg-empty"
+        :halign "start"
+        :visible {(arraylength(cfg-search-results) ?: 0) == 0 && cfg-search != ""}
+        :text "(no matches found)"))
+
+    ; Help text
+    (label
+      :class "cfg-help"
+      :halign "start"
+      :text "Type to search | MOD+SHIFT: ↑/↓ select | Enter add | Backspace back | F unfocus")))
+
+; ─────────────────────────────────────────────────────────────
+; Main Configure Dashboard
+; ─────────────────────────────────────────────────────────────
+
+(defwidget configure-dashboard []
+  (box
+    :class "cfg-dashboard"
+    :orientation "v"
+    :space-evenly false
+    :halign "fill"
+    :valign "fill"
+    (box
+      :visible {cfg-mode == "ws-select"}
+      (cfg-ws-select-screen))
+    (box
+      :visible {cfg-mode == "app-list"}
+      (cfg-app-list-screen))
+    (box
+      :visible {cfg-mode == "app-picker"}
+      (cfg-app-picker-screen))))
+
+; ─────────────────────────────────────────────────────────────
+; Configure Window Definition
+; ─────────────────────────────────────────────────────────────
+
+(defwindow configure
+  :monitor 0
+  :geometry (geometry
+    :x "100px"
+    :y "150px"
+    :width "420px"
+    :height "480px"
+    :anchor "top left")
+  :stacking "overlay"
+  :exclusive false
+  :focusable false
+  :namespace "launchpad"
+  (configure-dashboard))
